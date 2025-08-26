@@ -12,7 +12,7 @@ st.caption("Ingresa 5 campeones por equipo. El modelo Bradley–Terry calcula P(
 with st.expander("⚙️ Configuración de rutas"):
     default_model = os.environ.get("MODEL_PATH", "src/models/checkpoints/bt_transformer_model.pt")
     default_name2id = os.environ.get("NAME2ID_PATH", "data/artifacts/name2id.json")
-    default_champs = os.environ.get("CHAMPS_CSV", "data/champions.csv")
+    default_champs = os.environ.get("CHAMPS_CSV", "data/download_champions.csv")
     model_path = st.text_input("MODEL_PATH", default_model)
     name2id_path = st.text_input("NAME2ID_PATH (opcional)", default_name2id)
     champs_csv = st.text_input("CHAMPIONS CSV (fallback si no hay NAME2ID)", default_champs)
