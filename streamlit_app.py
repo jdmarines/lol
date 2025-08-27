@@ -63,3 +63,18 @@ if st.button("Calcular probabilidades"):
         st.metric("P(Blue gana)", f"{p_blue:.3f}")
     with col2:
         st.metric("P(Red gana)", f"{p_red:.3f}")
+
+# Autocarga si los paths por defecto existen
+if "model" not in st.session_state:
+    try:
+        if os.path.exists(model_path):
+            st.session_state.model, st.session_state.id2idx = load_model(model_path, map_location="cpu")
+        if os.path.exists(name2id_path) or os.path.exists(champs_csv) or os.path.exists("data/download_champions.csv"):
+            st.session_state.name2id = load_name2id(
+                name2id_path if os.path.exists(name2id_path) else None,
+                champs_csv if os.path.exists(champs_csv) else "data/download_champions.csv"
+            )
+        if "model" in st.session_state and "name2id" in st.session_state:
+            st.success("Modelo y mappings cargados automáticamente.")
+    except Exception as e:
+        st.info("No se pudo autocargar; usa el botón para cargar manualmente.")
