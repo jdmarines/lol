@@ -23,22 +23,34 @@ def normalize_team(team: List[str]) -> List[str]:
 
 # --- Carga de name2id ---
 def load_name2id(name2id_path: Optional[str], champions_csv_path: Optional[str]) -> Dict[str, int]:
-    # 1) JSON explícito (si existe)
+    import os, json, pandas as pd
+
+    # 1) JSON explícito (prioritario)
     if name2id_path and os.path.exists(name2id_path):
         with open(name2id_path, "r", encoding="utf-8") as f:
             d = json.load(f)
-        # asegurar ints
-        return {k: int(v) for k, v in d.items()}
-    # 2) champions.csv (apiid, apiname, name)
-    if champions_csv_path and os.path.exists(champions_csv_path):
-        df = pd.read_csv(champions_csv_path)
-        # Columnas posibles
-        id_col = "apiid" if "apiid" in df.columns else ("id" if "id" in df.columns else None)
-        name_col = "apiname" if "apiname" in df.columns else ("name" if "name" in df.columns else None)
-        if id_col and name_col:
-            m = dict(zip(df[name_col].astype(str), df[id_col].astype(int)))
-            return m
-    raise FileNotFoundError("No se pudo cargar name2id: provee data/artifacts/name2id.json o data/champions.csv")
+        return {str(k): int(v) for k, v in d.items()}
+
+    # 2) CSVs permitidos (en orden de preferencia)
+    candidates = []
+    if champions_csv_path:
+        candidates.append(champions_csv_path)  # lo que viene de la UI
+    # fallbacks comunes
+    candidates += [
+        "data/champions.csv",
+        "data/download_champions.csv",
+    ]
+
+    for csvp in candidates:
+        if csvp and os.path.exists(csvp):
+            df = pd.read_csv(csvp)
+            id_col = "apiid" if "apiid" in df.columns else ("id" if "id" in df.columns else None)
+            name_col = "apiname" if "apiname" in df.columns else ("name" if "name" in df.columns else None)
+            if id_col and name_col:
+                m = dict(zip(df[name_col].astype(str), df[id_col].astype(int)))
+                return m
+
+    raise FileNotFoundError("No se pudo cargar name2id: provee data/artifacts/name2id.json o un CSV con columnas (apiid|id) y (apiname|name).")
 
 # --- Carga de checkpoint ---
 def load_model(model_path: str, map_location: str = "cpu"):
